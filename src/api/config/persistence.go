@@ -27,12 +27,12 @@ var (
 )
 
 func InitDB() {
-	DB, err := sql.Open("mysql", dsn(dbname))
+	DB, err := sql.Open("mysql", "root:root@/InmoTricarico")
 	if err != nil {
 		panic(err)
 	}
 	// See "Important settings" section.
-	DB.SetConnMaxLifetime(time.Minute * 3)
+	DB.SetConnMaxLifetime(time.Minute * 10)
 	DB.SetMaxOpenConns(10)
 	DB.SetMaxIdleConns(10)
 }
