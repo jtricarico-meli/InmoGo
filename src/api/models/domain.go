@@ -1,10 +1,12 @@
 package models
 
 import (
+	"gorm.io/gorm"
 	"time"
 )
 
 type Inmueble struct {
+	gorm.Model
 	InmuebleID    int64   `json:"inmuebleID"`
 	Direccion     string  `json:"direccion"`
 	Ambientes     int     `json:"ambientes"`
@@ -16,6 +18,7 @@ type Inmueble struct {
 }
 
 type Propietario struct {
+	gorm.Model
 	PropietarioID int64  `json:"propietarioID"`
 	Dni           int64  `json:"dni"`
 	Apellido      string `json:"apellido"`
@@ -25,7 +28,8 @@ type Propietario struct {
 	Password      bool   `json:"password"`
 }
 
-type pagos struct {
+type Pagos struct {
+	gorm.Model
 	PagoID     int64     `json:"inmuebleID"`
 	NumeroPago int       `json:"numero_pago"`
 	AlquilerID int       `json:"alquiler"`
@@ -34,6 +38,7 @@ type pagos struct {
 }
 
 type Alquiler struct {
+	gorm.Model
 	AlquilerID  int64     `json:"alquilerID"`
 	InquilinoId string    `json:"inquilino"`
 	InmuebleID  int       `json:"inmueble"`
@@ -43,6 +48,7 @@ type Alquiler struct {
 }
 
 type Inquilino struct {
+	gorm.Model
 	InquilinoID int64  `json:"inquilinoID"`
 	Dni         int64  `json:"dni"`
 	Apellido    string `json:"apellido"`
