@@ -8,9 +8,7 @@ import (
 )
 
 func main() {
-	config := config2.NewConfig()
-
-	db, err := config2.ConnectDatabase(config)
+	db, err := config2.ConnectDatabase()
 	if err != nil {
 		panic(err)
 	}
@@ -19,12 +17,12 @@ func main() {
 	propietarioRepository := repositories.NewPropietarioRepository(db)
 
 	//InitService
-	propietarioService := services.NewPropietarioService(config, propietarioRepository)
+	propietarioService := services.NewPropietarioService(propietarioRepository)
 
 	//InitController
 	propietarioController := controllers.NewPropietarioController(propietarioService)
 
-	server := config2.NewServer(config, propietarioController)
+	server := config2.NewServer(propietarioController)
 
 	server.Run()
 }

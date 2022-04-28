@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:mysql://localhost:3306/InmoTricarico</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="InmoGo.db" uuid="b907fb28-b4de-4624-979d-2bc8b64596cc">
+      <driver-ref>sqlite.xerial</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
+      <jdbc-url>jdbc:sqlite:C:\Users\Win10\go\src\InmoGo\src\api\InmoGo.db</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>

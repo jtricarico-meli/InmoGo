@@ -17,6 +17,7 @@ func (p *PropietarioService) Get(ID int) *models.Propietario {
 	return p.repository.Get(ID)
 }
 
-func (p *PropietarioService) Save(propietario *models.Propietario) {
+func (p *PropietarioService) Save(propietario *models.Propietario) *models.Propietario {
 	p.repository.Save(propietario)
+	return nil
 }

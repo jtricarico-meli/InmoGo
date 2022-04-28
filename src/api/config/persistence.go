@@ -1,11 +1,10 @@
 package config
 
 import (
-	_ "github.com/go-sql-driver/mysql"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 func ConnectDatabase() (*gorm.DB, error) {
-	return gorm.Open(sqlite.Open("InmoGo.db"), &gorm.Config{})
+	return gorm.Open(mysql.Open("root:root@/InmoTricarico"), &gorm.Config{})
 }

@@ -25,7 +25,7 @@ type Propietario struct {
 	Nombre        string `json:"nombre"`
 	Telefono      int64  `json:"telefono"`
 	Mail          string `json:"mail"`
-	Password      bool   `json:"password"`
+	Password      string `json:"password"`
 }
 
 type Pagos struct {

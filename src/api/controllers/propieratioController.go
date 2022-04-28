@@ -3,6 +3,7 @@ package controllers
 import (
 	"InmoGo/src/api/models"
 	"InmoGo/src/api/services"
+	"strconv"
 )
 
 type PropietarioController struct {
@@ -13,10 +14,14 @@ func NewPropietarioController(service *services.PropietarioService) *Propietario
 	return &PropietarioController{service: service}
 }
 
-func (p *PropietarioController) Get(ID int) *models.Propietario {
-	return p.service.Get(ID)
+func (p *PropietarioController) Get(ID string) *models.Propietario {
+	id, err := strconv.Atoi(ID)
+	if err != nil {
+		panic(err)
+	}
+	return p.service.Get(id)
 }
 
-func (p *PropietarioController) Save(propietario interface{}) *models.Propietario {
-	return &models.Propietario{}
+func (p *PropietarioController) Save(propietario models.Propietario) *models.Propietario {
+	return p.service.Save(&propietario)
 }

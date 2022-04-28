@@ -2,23 +2,37 @@ package config
 
 import (
 	"InmoGo/src/api/controllers"
+	"InmoGo/src/api/models"
 	"encoding/json"
+	"fmt"
+	"io/ioutil"
 	"net/http"
 	"strings"
 )
 
 type Server struct {
-	config                *Config
 	propietarioController *controllers.PropietarioController
 }
 
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/propietario", s.handlePost)
-	mux.HandleFunc("/propietario", s.handleGet)
+	mux.HandleFunc("/propietario/", s.handlerMethod)
+
+	mux.HandleFunc("/", s.handleGet)
 
 	return mux
+}
+
+func (s *Server) handlerMethod(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case "POST":
+		s.handlePost(w, r)
+	case "GET":
+		s.handleGet(w, r)
+	default:
+		panic(fmt.Sprintf("Not Found Handler for method: %s", r.Method))
+	}
 }
 
 func (s *Server) Run() {
@@ -33,7 +47,17 @@ func (s *Server) Run() {
 func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 	var res interface{}
 	if strings.Contains(r.URL.Path, "/propietario") {
-		res = s.propietarioController.Save(r.Body)
+		all, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			fmt.Println(err)
+		}
+		var prop = models.Propietario{}
+		err = json.Unmarshal(all, &prop)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(prop)
+		res = s.propietarioController.Save(prop)
 	}
 
 	bytes, _ := json.Marshal(res)
@@ -45,8 +69,12 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	var res interface{}
-	if strings.Contains(r.URL.Path, "/propietario") {
-		res = s.propietarioController.Get(1)
+	i := strings.LastIndex(r.URL.Path, "/")
+	id := r.URL.Path[i+1:]
+	if strings.Contains(r.URL.Path, "/propietario/") {
+		res = s.propietarioController.Get(id)
+	} else {
+		res = "pong"
 	}
 	bytes, _ := json.Marshal(res)
 
@@ -55,9 +83,8 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
-func NewServer(config *Config, propController *controllers.PropietarioController) *Server {
+func NewServer(propController *controllers.PropietarioController) *Server {
 	return &Server{
-		config:                config,
 		propietarioController: propController,
 	}
 }
