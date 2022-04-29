@@ -14,11 +14,13 @@ func main() {
 
 	//InitRepository
 	propietarioRepository := repositories.NewPropietarioRepository(db)
+	inmuebleRepository := repositories.NewInmuebleRepository(db)
 
 	//InitService
 	propietarioService := services.NewPropietarioService(propietarioRepository)
+	inmuebleService := services.NewInmuebleService(inmuebleRepository)
 
-	server := config2.NewServer(propietarioService)
+	server := config2.NewServer(propietarioService, inmuebleService)
 
 	server.Run()
 }

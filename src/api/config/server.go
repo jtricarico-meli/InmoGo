@@ -13,14 +13,13 @@ import (
 
 type Server struct {
 	propietario *services.PropietarioService
+	inmueble    *services.InmuebleService
 }
 
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 
-	mux.HandleFunc("/propietario/", s.handlerMethod)
-
-	mux.HandleFunc("/", s.handleGet)
+	mux.HandleFunc("/", s.handlerMethod)
 
 	return mux
 }
@@ -47,11 +46,12 @@ func (s *Server) Run() {
 
 func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 	var res interface{}
+	all, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+	}
 	if strings.Contains(r.URL.Path, "/propietario") {
-		all, err := ioutil.ReadAll(r.Body)
-		if err != nil {
-			fmt.Println(err)
-		}
+
 		var prop = models.Propietario{}
 		err = json.Unmarshal(all, &prop)
 		if err != nil {
@@ -59,6 +59,17 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Println(prop)
 		res = s.propietario.Save(&prop)
+	}
+
+	if strings.Contains(r.URL.Path, "/inmueble") {
+
+		var inmueble = models.Inmueble{}
+		err = json.Unmarshal(all, &inmueble)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(inmueble)
+		res = s.inmueble.Save(&inmueble)
 	}
 
 	bytes, _ := json.Marshal(res)
@@ -75,6 +86,9 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.URL.Path, "/propietario/") {
 		intID, _ := strconv.Atoi(id)
 		res = s.propietario.Get(intID)
+	} else if strings.Contains(r.URL.Path, "/inmueble/") {
+		intID, _ := strconv.Atoi(id)
+		res = s.inmueble.Get(intID)
 	} else {
 		res = "pong"
 	}
@@ -85,8 +99,9 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
-func NewServer(propietario *services.PropietarioService) *Server {
+func NewServer(propietario *services.PropietarioService, inmueble *services.InmuebleService) *Server {
 	return &Server{
 		propietario: propietario,
+		inmueble:    inmueble,
 	}
 }
