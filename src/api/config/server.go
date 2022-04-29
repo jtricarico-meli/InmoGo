@@ -1,17 +1,18 @@
 package config
 
 import (
-	"InmoGo/src/api/controllers"
 	"InmoGo/src/api/models"
+	"InmoGo/src/api/services"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 type Server struct {
-	propietarioController *controllers.PropietarioController
+	propietario *services.PropietarioService
 }
 
 func (s *Server) Handler() http.Handler {
@@ -57,7 +58,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 			fmt.Println(err)
 		}
 		fmt.Println(prop)
-		res = s.propietarioController.Save(prop)
+		res = s.propietario.Save(&prop)
 	}
 
 	bytes, _ := json.Marshal(res)
@@ -72,7 +73,8 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	i := strings.LastIndex(r.URL.Path, "/")
 	id := r.URL.Path[i+1:]
 	if strings.Contains(r.URL.Path, "/propietario/") {
-		res = s.propietarioController.Get(id)
+		intID, _ := strconv.Atoi(id)
+		res = s.propietario.Get(intID)
 	} else {
 		res = "pong"
 	}
@@ -83,8 +85,8 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
-func NewServer(propController *controllers.PropietarioController) *Server {
+func NewServer(propietario *services.PropietarioService) *Server {
 	return &Server{
-		propietarioController: propController,
+		propietario: propietario,
 	}
 }
