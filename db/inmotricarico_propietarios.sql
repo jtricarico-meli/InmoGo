@@ -1,0 +1,4 @@
+INSERT INTO inmotricarico.propietarios (id, dni, apellido, nombre, telefono, mail, password, deleted_at, created_at, updated_at) VALUES (1, 123345, 'Sanchez', 'pepe', 111222333, 'pepe@gmail.com', '1234', null, null, null);
+INSERT INTO inmotricarico.propietarios (id, dni, apellido, nombre, telefono, mail, password, deleted_at, created_at, updated_at) VALUES (2, 12312321, 'sdasdasdsa', 'algo', 111222333, 'hola@gmail.com', '1111', null, '2022-04-28', '2022-04-28');
+INSERT INTO inmotricarico.propietarios (id, dni, apellido, nombre, telefono, mail, password, deleted_at, created_at, updated_at) VALUES (3, 12312321, 'sdasdasdsa', 'algo', 111222333, 'hola@gmail.com', '1111', null, '2022-04-28', '2022-04-28');
+INSERT INTO inmotricarico.propietarios (id, dni, apellido, nombre, telefono, mail, password, deleted_at, created_at, updated_at) VALUES (4, 12312321, 'sdasdasdsa', 'algo', 111222333, 'hola@gmail.com', '1111', null, '2022-04-28', '2022-04-28');
