@@ -75,6 +75,39 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		res = s.inmueble.Save(&inmueble)
 	}
 
+	if strings.Contains(r.URL.Path, "/pago") {
+
+		var pago = models.Pago{}
+		err = json.Unmarshal(all, &pago)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(pago)
+		res = s.pago.Save(&pago)
+	}
+
+	if strings.Contains(r.URL.Path, "/alquiler") {
+
+		var alquiler = models.Alquiler{}
+		err = json.Unmarshal(all, &alquiler)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(alquiler)
+		res = s.alquiler.Save(&alquiler)
+	}
+
+	if strings.Contains(r.URL.Path, "/inquilino") {
+
+		var inquilino = models.Inquilino{}
+		err = json.Unmarshal(all, &inquilino)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(inquilino)
+		res = s.inquilino.Save(&inquilino)
+	}
+
 	bytes, _ := json.Marshal(res)
 
 	w.Header().Set("Content-Type", "application/json")
@@ -86,12 +119,47 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	var res interface{}
 	i := strings.LastIndex(r.URL.Path, "/")
 	id := r.URL.Path[i+1:]
+
+	//PROPIETARIO
 	if strings.Contains(r.URL.Path, "/propietario/") {
 		intID, _ := strconv.Atoi(id)
 		res = s.propietario.Get(intID)
-	} else if strings.Contains(r.URL.Path, "/inmueble/") {
+	}
+
+	//INMUEBLE
+	if strings.Contains(r.URL.Path, "/inmueble/all") {
+		intID, _ := strconv.Atoi(id)
+		res = s.inmueble.GetAll(intID)
+	}
+	if strings.Contains(r.URL.Path, "/inmueble/") {
 		intID, _ := strconv.Atoi(id)
 		res = s.inmueble.Get(intID)
+	}
+
+	//PAGO
+	if strings.Contains(r.URL.Path, "/pago/all") {
+		intID, _ := strconv.Atoi(id)
+		res = s.pago.GetAll(intID)
+	}
+	if strings.Contains(r.URL.Path, "/pago/") {
+		intID, _ := strconv.Atoi(id)
+		res = s.pago.Get(intID)
+	}
+
+	//ALQUILER
+	if strings.Contains(r.URL.Path, "/alquiler/all") {
+		intID, _ := strconv.Atoi(id)
+		res = s.alquiler.GetAllByInmueble(intID)
+	}
+	if strings.Contains(r.URL.Path, "/alquiler/") {
+		intID, _ := strconv.Atoi(id)
+		res = s.alquiler.Get(intID)
+	}
+
+	//INQUILINO
+	if strings.Contains(r.URL.Path, "/inquilino/") {
+		intID, _ := strconv.Atoi(id)
+		res = s.inquilino.Get(intID)
 	} else {
 		res = "pong"
 	}

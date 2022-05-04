@@ -22,6 +22,6 @@ func (i *AlquilerService) Save(propietario *models.Alquiler) *models.Alquiler {
 	return nil
 }
 
-func (i *AlquilerService) GetAll(propietarioID int) []*models.Alquiler {
-	return i.repository.GetAll(propietarioID)
+func (i *AlquilerService) GetAllByInmueble(propietarioID int) []*models.Alquiler {
+	return i.repository.GetAllByInmueble(propietarioID)
 }

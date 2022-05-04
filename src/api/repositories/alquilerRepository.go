@@ -24,9 +24,9 @@ func (a *AlquilerRepository) Get(ID int) *models.Alquiler {
 	return alquiler
 }
 
-func (a *AlquilerRepository) GetAll(propietarioID int) []*models.Alquiler {
+func (a *AlquilerRepository) GetAllByInmueble(inmuebleID int) []*models.Alquiler {
 	var alquiler []*models.Alquiler
-	a.db.Where("propietario_id = ?", propietarioID).Find(&alquiler)
+	a.db.Where("inmueble_id = ?", inmuebleID).Find(&alquiler)
 
 	return alquiler
 }
