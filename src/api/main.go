@@ -15,12 +15,18 @@ func main() {
 	//InitRepository
 	propietarioRepository := repositories.NewPropietarioRepository(db)
 	inmuebleRepository := repositories.NewInmuebleRepository(db)
+	pagoRepository := repositories.NewPagoRepository(db)
+	inquilinoRepository := repositories.NewInquilinoRepository(db)
+	alquilerRepository := repositories.NewAlquilerRepository(db)
 
 	//InitService
 	propietarioService := services.NewPropietarioService(propietarioRepository)
 	inmuebleService := services.NewInmuebleService(inmuebleRepository)
+	pagoService := services.NewPagoService(pagoRepository)
+	inquilinoService := services.NewInquilinoService(inquilinoRepository)
+	alquilerService := services.NewAlquilerService(alquilerRepository)
 
-	server := config2.NewServer(propietarioService, inmuebleService)
+	server := config2.NewServer(propietarioService, inmuebleService, pagoService, inquilinoService, alquilerService)
 
 	server.Run()
 }

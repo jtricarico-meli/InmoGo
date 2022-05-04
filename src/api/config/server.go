@@ -14,6 +14,9 @@ import (
 type Server struct {
 	propietario *services.PropietarioService
 	inmueble    *services.InmuebleService
+	alquiler    *services.AlquilerService
+	inquilino   *services.InquilinoService
+	pago        *services.PagoService
 }
 
 func (s *Server) Handler() http.Handler {
@@ -99,9 +102,17 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	w.Write(bytes)
 }
 
-func NewServer(propietario *services.PropietarioService, inmueble *services.InmuebleService) *Server {
+func NewServer(
+	propietario *services.PropietarioService,
+	inmueble *services.InmuebleService,
+	pago *services.PagoService,
+	inquilino *services.InquilinoService,
+	alquiler *services.AlquilerService) *Server {
 	return &Server{
 		propietario: propietario,
 		inmueble:    inmueble,
+		pago:        pago,
+		inquilino:   inquilino,
+		alquiler:    alquiler,
 	}
 }

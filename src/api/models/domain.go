@@ -26,7 +26,7 @@ type Propietario struct {
 	Password string `json:"password"`
 }
 
-type Pagos struct {
+type Pago struct {
 	gorm.Model
 	NumeroPago int       `json:"numero_pago"`
 	AlquilerID int       `json:"alquiler"`
