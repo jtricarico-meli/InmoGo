@@ -4,9 +4,12 @@ import (
 	config2 "InmoGo/src/api/config"
 	"InmoGo/src/api/repositories"
 	"InmoGo/src/api/services"
+	"InmoGo/src/api/utils"
 )
 
 func main() {
+	jwtMaker, _ := utils.NewJWTMaker("AAABBBBCCCDDDEEEFFFFAAABBBBCCCDDDEEEFFFFAAABBBBCCCDDDEEEFFFF")
+
 	db, err := config2.ConnectDatabase()
 	if err != nil {
 		panic(err)
@@ -20,7 +23,7 @@ func main() {
 	alquilerRepository := repositories.NewAlquilerRepository(db)
 
 	//InitService
-	propietarioService := services.NewPropietarioService(propietarioRepository)
+	propietarioService := services.NewPropietarioService(propietarioRepository, jwtMaker)
 	inmuebleService := services.NewInmuebleService(inmuebleRepository)
 	pagoService := services.NewPagoService(pagoRepository)
 	inquilinoService := services.NewInquilinoService(inquilinoRepository)

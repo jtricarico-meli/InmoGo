@@ -3,6 +3,7 @@ package config
 import (
 	"InmoGo/src/api/models"
 	"InmoGo/src/api/services"
+	"InmoGo/src/api/utils"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -27,7 +28,17 @@ func (s *Server) Handler() http.Handler {
 	return mux
 }
 
+func shouldBeAuthenticate(r *http.Request) bool {
+	return !strings.Contains(r.URL.Path, "login") &&
+		!(strings.Contains(r.URL.Path, "propietario") && r.Method == "POST")
+}
+
 func (s *Server) handlerMethod(w http.ResponseWriter, r *http.Request) {
+	if shouldBeAuthenticate(r) {
+		if err := utils.Authenticate(r, s.propietario.JWT); err != nil {
+			panic(err)
+		}
+	}
 	switch r.Method {
 	case "POST":
 		s.handlePost(w, r)
@@ -53,6 +64,18 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
+	if strings.Contains(r.URL.Path, "/login") {
+
+		var prop = models.Propietario{}
+		err = json.Unmarshal(all, &prop)
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(prop)
+		res, err = s.propietario.Login(prop.Mail, prop.Password)
+		fmt.Println(fmt.Sprintf("LOGIN ERR: %s", err))
+	}
+
 	if strings.Contains(r.URL.Path, "/propietario") {
 
 		var prop = models.Propietario{}
@@ -160,8 +183,6 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(r.URL.Path, "/inquilino/") {
 		intID, _ := strconv.Atoi(id)
 		res = s.inquilino.Get(intID)
-	} else {
-		res = "pong"
 	}
 	bytes, _ := json.Marshal(res)
 

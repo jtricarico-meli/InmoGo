@@ -23,3 +23,10 @@ func (p *PropietarioRepository) Get(ID int) *models.Propietario {
 
 	return propietario
 }
+
+func (p *PropietarioRepository) Login(mail string, password string) *models.Propietario {
+	var propietario *models.Propietario
+	p.db.Where("mail = ?", mail).Find(&propietario)
+
+	return propietario
+}
