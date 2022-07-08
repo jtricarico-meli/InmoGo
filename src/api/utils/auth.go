@@ -98,10 +98,10 @@ func (payload *Payload) Valid() error {
 	return nil
 }
 
-func Authenticate(r *http.Request, jwt Maker) error {
-	authHeader := r.Header.Get("authorization")
+func Authenticate(r *http.Request, jwt Maker) (string, error) {
+	authHeader := r.Header.Get("Authorization")
 	if authHeader == "" {
-		return errors.New("traffic not authenticated")
+		return "", errors.New("traffic not authenticated")
 	}
 	var credentials string
 	parts := strings.Split(authHeader, " ")
@@ -111,8 +111,8 @@ func Authenticate(r *http.Request, jwt Maker) error {
 
 	token, err := jwt.VerifyToken(credentials)
 	if err != nil {
-		return err
+		return "", err
 	}
 
-	return token.Valid()
+	return token.Username, token.Valid()
 }

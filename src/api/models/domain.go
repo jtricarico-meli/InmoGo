@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type TokenLogin struct {
+	Token string `json:"token"`
+}
+
 type Inmuebles struct {
 	Inmuebles []*Inmueble `json:"inmuebles"`
 }

@@ -20,6 +20,8 @@ type Server struct {
 	pago        *services.PagoService
 }
 
+var userMail string
+
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
 
@@ -31,20 +33,24 @@ func (s *Server) Handler() http.Handler {
 func shouldBeAuthenticate(r *http.Request) bool {
 	return !strings.Contains(r.URL.Path, "login") &&
 		!(strings.Contains(r.URL.Path, "propietario") && r.Method == "POST") &&
-		!(r.URL.Path == "/")
+		!(r.Method == "OPTIONS")
 }
 
 func (s *Server) handlerMethod(w http.ResponseWriter, r *http.Request) {
 	if shouldBeAuthenticate(r) {
-		if err := utils.Authenticate(r, s.propietario.JWT); err != nil {
+		mail, err := utils.Authenticate(r, s.propietario.JWT)
+		if err != nil {
 			panic(err)
 		}
+		userMail = mail
 	}
 	switch r.Method {
 	case "POST":
 		s.handlePost(w, r)
 	case "GET":
 		s.handleGet(w, r)
+	case "OPTIONS":
+		s.handleOptions(w, r)
 	default:
 		s.setResponse(utils.InmoError{
 			Code:    405,
@@ -81,6 +87,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 			s.setResponse(err, http.StatusBadRequest, w)
 		}
 		res, err = s.propietario.Login(prop.Mail, prop.Password)
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8100")
 	}
 
 	if strings.Contains(r.URL.Path, "/propietario") {
@@ -155,8 +162,7 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	//PROPIETARIO
 	if strings.Contains(r.URL.Path, "/propietario/") {
-		intID, _ := strconv.Atoi(id)
-		res = s.propietario.Get(intID)
+		res = s.propietario.Get(userMail)
 	}
 
 	//INMUEBLE
@@ -201,6 +207,13 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) handleOptions(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8100")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+	w.WriteHeader(http.StatusNoContent)
+}
+
 func (s *Server) setErrorResponse(err error, w http.ResponseWriter) {
 	var inmoError *utils.InmoError
 	errJson := json.Unmarshal([]byte(err.Error()), &inmoError)
@@ -215,6 +228,7 @@ func (s *Server) setErrorResponse(err error, w http.ResponseWriter) {
 func (s *Server) setResponse(v any, status int, w http.ResponseWriter) {
 	bytes, _ := json.Marshal(v)
 	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8100")
 	w.WriteHeader(status)
 	w.Write(bytes)
 }

@@ -18,8 +18,9 @@ func NewPropietarioService(repository *repositories.PropietarioRepository, jwt u
 	return &PropietarioService{repository: repository, JWT: jwt}
 }
 
-func (p *PropietarioService) Get(ID int) *models.Propietario {
-	return p.repository.Get(ID)
+func (p *PropietarioService) Get(mail string) *models.Propietario {
+	prop, _ := p.repository.Login(mail)
+	return prop
 }
 
 func (p *PropietarioService) Save(propietario *models.Propietario) (*models.Propietario, error) {
@@ -32,22 +33,22 @@ func (p *PropietarioService) Save(propietario *models.Propietario) (*models.Prop
 	return propietario, err
 }
 
-func (p *PropietarioService) Login(mail string, pass string) (string, error) {
+func (p *PropietarioService) Login(mail string, pass string) (*models.TokenLogin, error) {
 
 	propietario, err := p.repository.Login(mail)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	if propietario != nil {
 		if !utils.CheckPasswordHash(pass, propietario.Password) {
-			return "", utils.NewError(403, "incorrect password")
+			return nil, utils.NewError(403, "incorrect password")
 		}
 	}
 
 	token, err := p.JWT.CreateToken(mail, loginDuration)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
-	return token, nil
+	return &models.TokenLogin{Token: token}, nil
 }
