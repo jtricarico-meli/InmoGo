@@ -6,5 +6,5 @@ import (
 )
 
 func ConnectDatabase() (*gorm.DB, error) {
-	return gorm.Open(mysql.Open("root:root@/InmoTricarico"), &gorm.Config{})
+	return gorm.Open(mysql.Open("root:root@/InmoTricarico?parseTime=true"), &gorm.Config{})
 }

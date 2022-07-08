@@ -47,3 +47,17 @@ func (i *InmuebleRepository) GetAll(propietarioID int) (*models.Inmuebles, error
 		Inmuebles: inmueble,
 	}, nil
 }
+
+func (i *InmuebleRepository) Delete(ID int) error {
+	var inmueble *models.Inmueble
+	i.db.First(&inmueble, ID)
+
+	if inmueble.ID != 0 {
+		i.db.Delete(inmueble)
+		return nil
+	}
+	return utils.InmoError{
+		Code:    404,
+		Message: fmt.Sprintf("not found inmueble with id: %v", ID),
+	}
+}

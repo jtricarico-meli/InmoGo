@@ -20,7 +20,7 @@ type Server struct {
 	pago        *services.PagoService
 }
 
-var userMail string
+var ID string
 
 func (s *Server) Handler() http.Handler {
 	mux := http.NewServeMux()
@@ -38,17 +38,21 @@ func shouldBeAuthenticate(r *http.Request) bool {
 
 func (s *Server) handlerMethod(w http.ResponseWriter, r *http.Request) {
 	if shouldBeAuthenticate(r) {
-		mail, err := utils.Authenticate(r, s.propietario.JWT)
+		userID, err := utils.Authenticate(r, s.propietario.JWT)
 		if err != nil {
 			panic(err)
 		}
-		userMail = mail
+		ID = userID
 	}
 	switch r.Method {
 	case "POST":
 		s.handlePost(w, r)
 	case "GET":
 		s.handleGet(w, r)
+	case "PUT":
+		s.handlePut(w, r)
+	case "DELETE":
+		s.handleDelete(w, r)
 	case "OPTIONS":
 		s.handleOptions(w, r)
 	default:
@@ -77,6 +81,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 		s.setResponse(err, http.StatusInternalServerError, w)
+		return
 	}
 	if strings.Contains(r.URL.Path, "/login") {
 
@@ -85,6 +90,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 			s.setResponse(err, http.StatusBadRequest, w)
+			return
 		}
 		res, err = s.propietario.Login(prop.Mail, prop.Password)
 		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8100")
@@ -97,6 +103,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 			s.setResponse(err, http.StatusBadRequest, w)
+			return
 		}
 		res, err = s.propietario.Save(&prop)
 	}
@@ -108,6 +115,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 			s.setResponse(err, http.StatusBadRequest, w)
+			return
 		}
 		res = s.inmueble.Save(&inmueble)
 	}
@@ -119,6 +127,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 			s.setResponse(err, http.StatusBadRequest, w)
+			return
 		}
 		res = s.pago.Save(&pago)
 	}
@@ -130,6 +139,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 			s.setResponse(err, http.StatusBadRequest, w)
+			return
 		}
 		res = s.alquiler.Save(&alquiler)
 	}
@@ -141,6 +151,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 			s.setResponse(err, http.StatusBadRequest, w)
+			return
 		}
 		res = s.inquilino.Save(&inquilino)
 	}
@@ -162,7 +173,8 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 
 	//PROPIETARIO
 	if strings.Contains(r.URL.Path, "/propietario/") {
-		res = s.propietario.Get(userMail)
+		intID, _ := strconv.Atoi(ID)
+		res = s.propietario.Get(intID)
 	}
 
 	//INMUEBLE
@@ -207,9 +219,78 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *Server) handlePut(w http.ResponseWriter, r *http.Request) {
+	var res interface{}
+	var err error
+	i := strings.LastIndex(r.URL.Path, "/")
+	id := r.URL.Path[i+1:]
+
+	all, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		fmt.Println(err)
+		s.setResponse(err, http.StatusInternalServerError, w)
+	}
+
+	//PROPIETARIO
+	if strings.Contains(r.URL.Path, "/propietario/") {
+		var prop = models.Propietario{}
+		err = json.Unmarshal(all, &prop)
+		if err != nil {
+			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
+			return
+		}
+
+		intID, _ := strconv.Atoi(id)
+		res, err = s.propietario.Put(intID, prop)
+	}
+
+	//INMUEBLE
+	if strings.Contains(r.URL.Path, "/inmueble/") {
+		var inmu = models.Inmueble{}
+		err = json.Unmarshal(all, &inmu)
+		if err != nil {
+			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
+			return
+		}
+
+		intID, _ := strconv.Atoi(id)
+		res, err = s.inmueble.Put(intID, inmu)
+	}
+
+	if err != nil {
+		s.setErrorResponse(err, w)
+	} else {
+		if res != nil {
+			s.setResponse(res, http.StatusOK, w)
+		}
+	}
+}
+
+func (s *Server) handleDelete(w http.ResponseWriter, r *http.Request) {
+	var res interface{}
+	var err error
+	i := strings.LastIndex(r.URL.Path, "/")
+	id := r.URL.Path[i+1:]
+
+	//INMUEBLE
+	if strings.Contains(r.URL.Path, "/inmueble/") {
+
+		intID, _ := strconv.Atoi(id)
+		err = s.inmueble.Delete(intID)
+	}
+
+	if err != nil {
+		s.setErrorResponse(err, w)
+	} else {
+		s.setResponse(res, http.StatusOK, w)
+	}
+}
+
 func (s *Server) handleOptions(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:8100")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, DELETE, PUT, OPTIONS")
 	w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 	w.WriteHeader(http.StatusNoContent)
 }

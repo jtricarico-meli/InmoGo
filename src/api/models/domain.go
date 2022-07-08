@@ -16,6 +16,8 @@ type Inmuebles struct {
 type Inmueble struct {
 	gorm.Model
 	Direccion     string  `json:"direccion"`
+	Latitud       int     `json:"latitud"`
+	Longitud      int     `json:"longitud"`
 	Ambientes     int     `json:"ambientes"`
 	Tipo          string  `json:"tipo"`
 	Uso           string  `json:"uso"`
@@ -29,7 +31,7 @@ type Propietario struct {
 	Dni      int64  `json:"dni"`
 	Apellido string `json:"apellido"`
 	Nombre   string `json:"nombre"`
-	Telefono int64  `json:"telefono"`
+	Telefono string `json:"telefono"`
 	Mail     string `json:"mail"`
 	Password string `json:"password"`
 }

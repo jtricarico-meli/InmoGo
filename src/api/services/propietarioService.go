@@ -4,6 +4,7 @@ import (
 	"InmoGo/src/api/models"
 	"InmoGo/src/api/repositories"
 	"InmoGo/src/api/utils"
+	"strconv"
 	"time"
 )
 
@@ -18,9 +19,27 @@ func NewPropietarioService(repository *repositories.PropietarioRepository, jwt u
 	return &PropietarioService{repository: repository, JWT: jwt}
 }
 
-func (p *PropietarioService) Get(mail string) *models.Propietario {
-	prop, _ := p.repository.Login(mail)
-	return prop
+func (p *PropietarioService) Put(ID int, propNew models.Propietario) (*models.Propietario, error) {
+	// Obtengo el propietario
+	propitario := p.repository.Get(ID)
+
+	if propitario.ID != 0 {
+		propitario.Apellido = propNew.Apellido
+		propitario.Nombre = propNew.Nombre
+		propitario.Telefono = propNew.Telefono
+
+		p.repository.Save(propitario)
+		return propitario, nil
+	}
+
+	return nil, utils.InmoError{
+		Code:    404,
+		Message: "propietario not found",
+	}
+}
+
+func (p *PropietarioService) Get(ID int) *models.Propietario {
+	return p.repository.Get(ID)
 }
 
 func (p *PropietarioService) Save(propietario *models.Propietario) (*models.Propietario, error) {
@@ -45,7 +64,7 @@ func (p *PropietarioService) Login(mail string, pass string) (*models.TokenLogin
 		}
 	}
 
-	token, err := p.JWT.CreateToken(mail, loginDuration)
+	token, err := p.JWT.CreateToken(strconv.FormatUint(uint64(propietario.ID), 10), loginDuration)
 	if err != nil {
 		return nil, err
 	}
