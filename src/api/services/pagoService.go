@@ -13,7 +13,7 @@ func NewPagoService(repository *repositories.PagoRepository) *PagoService {
 	return &PagoService{repository: repository}
 }
 
-func (p *PagoService) Get(ID int) *models.Pago {
+func (p *PagoService) Get(ID int) (*models.Pago, error) {
 	return p.repository.Get(ID)
 }
 

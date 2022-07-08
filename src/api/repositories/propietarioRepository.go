@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"InmoGo/src/api/models"
+	"InmoGo/src/api/utils"
 	"gorm.io/gorm"
 )
 
@@ -24,9 +25,13 @@ func (p *PropietarioRepository) Get(ID int) *models.Propietario {
 	return propietario
 }
 
-func (p *PropietarioRepository) Login(mail string, password string) *models.Propietario {
+func (p *PropietarioRepository) Login(mail string) (*models.Propietario, error) {
 	var propietario *models.Propietario
 	p.db.Where("mail = ?", mail).Find(&propietario)
 
-	return propietario
+	if propietario.Mail == "" {
+		return nil, utils.NewError(403, "email not Found")
+	}
+
+	return propietario, nil
 }

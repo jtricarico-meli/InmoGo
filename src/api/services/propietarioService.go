@@ -4,8 +4,6 @@ import (
 	"InmoGo/src/api/models"
 	"InmoGo/src/api/repositories"
 	"InmoGo/src/api/utils"
-	"errors"
-	"fmt"
 	"time"
 )
 
@@ -24,26 +22,26 @@ func (p *PropietarioService) Get(ID int) *models.Propietario {
 	return p.repository.Get(ID)
 }
 
-func (p *PropietarioService) Save(propietario *models.Propietario) *models.Propietario {
+func (p *PropietarioService) Save(propietario *models.Propietario) (*models.Propietario, error) {
 	password, err := utils.HashPassword(propietario.Password)
 	if err != nil {
-		fmt.Println(fmt.Sprintf("SAVE ERR: %s", err))
-		return nil
+		return nil, err
 	}
 	propietario.Password = password
 	p.repository.Save(propietario)
-	return nil
+	return propietario, err
 }
 
 func (p *PropietarioService) Login(mail string, pass string) (string, error) {
 
-	propietario := p.repository.Login(mail, pass)
+	propietario, err := p.repository.Login(mail)
+	if err != nil {
+		return "", err
+	}
 	if propietario != nil {
 		if !utils.CheckPasswordHash(pass, propietario.Password) {
-			return "", errors.New("incorrect password")
+			return "", utils.NewError(403, "incorrect password")
 		}
-	} else {
-		return "", errors.New(fmt.Sprintf("not found propietario with mail: %s", mail))
 	}
 
 	token, err := p.JWT.CreateToken(mail, loginDuration)

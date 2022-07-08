@@ -5,6 +5,10 @@ import (
 	"time"
 )
 
+type Inmuebles struct {
+	Inmuebles []*Inmueble `json:"inmuebles"`
+}
+
 type Inmueble struct {
 	gorm.Model
 	Direccion     string  `json:"direccion"`

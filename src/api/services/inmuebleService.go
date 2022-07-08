@@ -13,7 +13,7 @@ func NewInmuebleService(repository *repositories.InmuebleRepository) *InmuebleSe
 	return &InmuebleService{repository: repository}
 }
 
-func (i *InmuebleService) Get(ID int) *models.Inmueble {
+func (i *InmuebleService) Get(ID int) (*models.Inmueble, error) {
 	return i.repository.Get(ID)
 }
 
@@ -22,6 +22,6 @@ func (i *InmuebleService) Save(propietario *models.Inmueble) *models.Inmueble {
 	return nil
 }
 
-func (i *InmuebleService) GetAll(propietarioID int) []*models.Inmueble {
+func (i *InmuebleService) GetAll(propietarioID int) (*models.Inmuebles, error) {
 	return i.repository.GetAll(propietarioID)
 }

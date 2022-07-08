@@ -13,7 +13,7 @@ func NewInquilinoService(repository *repositories.InquilinoRepository) *Inquilin
 	return &InquilinoService{repository: repository}
 }
 
-func (i *InquilinoService) Get(ID int) *models.Inquilino {
+func (i *InquilinoService) Get(ID int) (*models.Inquilino, error) {
 	return i.repository.Get(ID)
 }
 

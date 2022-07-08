@@ -2,6 +2,8 @@ package repositories
 
 import (
 	"InmoGo/src/api/models"
+	"InmoGo/src/api/utils"
+	"fmt"
 	"gorm.io/gorm"
 )
 
@@ -17,9 +19,15 @@ func (i *InquilinoRepository) Save(inquilino *models.Inquilino) {
 	i.db.Save(inquilino)
 }
 
-func (i *InquilinoRepository) Get(ID int) *models.Inquilino {
+func (i *InquilinoRepository) Get(ID int) (*models.Inquilino, error) {
 	var inquilino *models.Inquilino
 	i.db.First(&inquilino, ID)
 
-	return inquilino
+	if inquilino.ID != 0 {
+		return inquilino, nil
+	}
+	return nil, utils.InmoError{
+		Code:    404,
+		Message: fmt.Sprintf("not found alquiler with id: %v", ID),
+	}
 }

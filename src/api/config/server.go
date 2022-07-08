@@ -30,7 +30,8 @@ func (s *Server) Handler() http.Handler {
 
 func shouldBeAuthenticate(r *http.Request) bool {
 	return !strings.Contains(r.URL.Path, "login") &&
-		!(strings.Contains(r.URL.Path, "propietario") && r.Method == "POST")
+		!(strings.Contains(r.URL.Path, "propietario") && r.Method == "POST") &&
+		!(r.URL.Path == "/")
 }
 
 func (s *Server) handlerMethod(w http.ResponseWriter, r *http.Request) {
@@ -45,7 +46,13 @@ func (s *Server) handlerMethod(w http.ResponseWriter, r *http.Request) {
 	case "GET":
 		s.handleGet(w, r)
 	default:
-		panic(fmt.Sprintf("Not Found Handler for method: %s", r.Method))
+		s.setResponse(utils.InmoError{
+			Code:    405,
+			Message: "method not supported",
+		},
+			http.StatusMethodNotAllowed,
+			w,
+		)
 	}
 }
 
@@ -63,6 +70,7 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 	all, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		fmt.Println(err)
+		s.setResponse(err, http.StatusInternalServerError, w)
 	}
 	if strings.Contains(r.URL.Path, "/login") {
 
@@ -70,10 +78,9 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(all, &prop)
 		if err != nil {
 			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
 		}
-		fmt.Println(prop)
 		res, err = s.propietario.Login(prop.Mail, prop.Password)
-		fmt.Println(fmt.Sprintf("LOGIN ERR: %s", err))
 	}
 
 	if strings.Contains(r.URL.Path, "/propietario") {
@@ -82,9 +89,9 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(all, &prop)
 		if err != nil {
 			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
 		}
-		fmt.Println(prop)
-		res = s.propietario.Save(&prop)
+		res, err = s.propietario.Save(&prop)
 	}
 
 	if strings.Contains(r.URL.Path, "/inmueble") {
@@ -93,8 +100,8 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(all, &inmueble)
 		if err != nil {
 			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
 		}
-		fmt.Println(inmueble)
 		res = s.inmueble.Save(&inmueble)
 	}
 
@@ -104,8 +111,8 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(all, &pago)
 		if err != nil {
 			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
 		}
-		fmt.Println(pago)
 		res = s.pago.Save(&pago)
 	}
 
@@ -115,8 +122,8 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(all, &alquiler)
 		if err != nil {
 			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
 		}
-		fmt.Println(alquiler)
 		res = s.alquiler.Save(&alquiler)
 	}
 
@@ -126,20 +133,23 @@ func (s *Server) handlePost(w http.ResponseWriter, r *http.Request) {
 		err = json.Unmarshal(all, &inquilino)
 		if err != nil {
 			fmt.Println(err)
+			s.setResponse(err, http.StatusBadRequest, w)
 		}
-		fmt.Println(inquilino)
 		res = s.inquilino.Save(&inquilino)
 	}
 
-	bytes, _ := json.Marshal(res)
+	if err != nil {
+		s.setErrorResponse(err, w)
+	}
 
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
-	w.Write(bytes)
+	if res != nil {
+		s.setResponse(res, http.StatusCreated, w)
+	}
 }
 
 func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	var res interface{}
+	var err error
 	i := strings.LastIndex(r.URL.Path, "/")
 	id := r.URL.Path[i+1:]
 
@@ -152,42 +162,60 @@ func (s *Server) handleGet(w http.ResponseWriter, r *http.Request) {
 	//INMUEBLE
 	if strings.Contains(r.URL.Path, "/inmueble/all") {
 		intID, _ := strconv.Atoi(id)
-		res = s.inmueble.GetAll(intID)
-	}
-	if strings.Contains(r.URL.Path, "/inmueble/") {
+		res, err = s.inmueble.GetAll(intID)
+	} else if strings.Contains(r.URL.Path, "/inmueble/") {
 		intID, _ := strconv.Atoi(id)
-		res = s.inmueble.Get(intID)
+		res, err = s.inmueble.Get(intID)
 	}
 
 	//PAGO
 	if strings.Contains(r.URL.Path, "/pago/all") {
 		intID, _ := strconv.Atoi(id)
 		res = s.pago.GetAll(intID)
-	}
-	if strings.Contains(r.URL.Path, "/pago/") {
+	} else if strings.Contains(r.URL.Path, "/pago/") {
 		intID, _ := strconv.Atoi(id)
-		res = s.pago.Get(intID)
+		res, err = s.pago.Get(intID)
 	}
 
 	//ALQUILER
 	if strings.Contains(r.URL.Path, "/alquiler/all") {
 		intID, _ := strconv.Atoi(id)
-		res = s.alquiler.GetAllByInmueble(intID)
-	}
-	if strings.Contains(r.URL.Path, "/alquiler/") {
+		res, err = s.alquiler.GetAllByInmueble(intID)
+	} else if strings.Contains(r.URL.Path, "/alquiler/") {
 		intID, _ := strconv.Atoi(id)
-		res = s.alquiler.Get(intID)
+		res, err = s.alquiler.Get(intID)
 	}
 
 	//INQUILINO
 	if strings.Contains(r.URL.Path, "/inquilino/") {
 		intID, _ := strconv.Atoi(id)
-		res = s.inquilino.Get(intID)
+		res, err = s.inquilino.Get(intID)
 	}
-	bytes, _ := json.Marshal(res)
 
+	if err != nil {
+		s.setErrorResponse(err, w)
+	} else {
+		if res != nil {
+			s.setResponse(res, http.StatusOK, w)
+		}
+	}
+}
+
+func (s *Server) setErrorResponse(err error, w http.ResponseWriter) {
+	var inmoError *utils.InmoError
+	errJson := json.Unmarshal([]byte(err.Error()), &inmoError)
+	if errJson != nil {
+		s.setResponse(err, http.StatusInternalServerError, w)
+		return
+	}
+	s.setResponse(err, inmoError.Code, w)
+	return
+}
+
+func (s *Server) setResponse(v any, status int, w http.ResponseWriter) {
+	bytes, _ := json.Marshal(v)
 	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(status)
 	w.Write(bytes)
 }
 
